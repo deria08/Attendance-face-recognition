@@ -1,0 +1,72 @@
+# =======================
+# DEPENDENCIES
+# =======================
+node_modules/
+venv/
+env/
+.env
+.env.local
+.env.*.local
+
+# =======================
+# BUILD OUTPUT
+# =======================
+dist/
+build/
+*.log
+*.tmp
+*.temp
+
+# =======================
+# BACKEND (Node.js / Express)
+# =======================
+backend/node_modules/
+backend/.env
+backend/.env.*
+backend/logs/
+backend/uploads/
+
+# =======================
+# BACKEND (Python / FastAPI)
+# =======================
+backend-python/venv/
+backend-python/__pycache__/
+backend-python/*.pyc
+backend-python/.env
+backend-python/.env.*
+backend-python/.pytest_cache/
+backend-python/.mypy_cache/
+
+# =======================
+# FRONTEND (React)
+# =======================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.production
+frontend/.env.development
+
+# =======================
+# IDE / EDITOR
+# =======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =======================
+# DATABASE FILES (jika ada lokal)
+# =======================
+*.db
+*.sqlite
+*.sqlite3
+
+# =======================
+# CLOUDINARY / MEDIA (jika ada)
+# =======================
+uploads/
+temp/
