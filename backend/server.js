@@ -9,8 +9,9 @@ const app = express();
 
 // Set DNS servers ke Google DNS (untuk mengatasi resolusi)
 dns.setServers(['8.8.8.8', '8.8.4.4']);
-
-app.use(cors());
+app.use(cors({
+  origin: ['https://frontend.up.railway.app', 'http://localhost:5173']
+}));
 app.use(express.json({ limit: '10mb' }));
 
 const faceRoutes = require('./routes/faceRoutes');
