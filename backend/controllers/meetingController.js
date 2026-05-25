@@ -1,6 +1,6 @@
-const Meeting = require('../models/Meeting');
-const Course = require('../models/Course');
-const User = require('../models/User');
+const Meeting = require('../models/meeting');
+const Course = require('../models/course');
+const User = require('../models/user');
 
 // Buka sesi absensi
 exports.openMeeting = async (req, res) => {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const User = require('../models/user');
 
 // Middleware untuk mendapatkan facesCollection dari app locals
 const getFacesCollection = (req, res, next) => {

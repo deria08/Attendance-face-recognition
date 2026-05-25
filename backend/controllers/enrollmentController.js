@@ -1,6 +1,6 @@
-const Enrollment = require('../models/Enrollment');
-const User = require('../models/User');
-const Course = require('../models/Course');
+const Enrollment = require('../models/enrollment');
+const User = require('../models/user');
+const Course = require('../models/course');
 
 
 // ================= ENROLL MAHASISWA =================

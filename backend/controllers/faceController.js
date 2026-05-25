@@ -1,4 +1,4 @@
-const Face = require('../models/Face');
+const Face = require('../models/face');
 const cloudinary = require('../config/cloudinary');
 
 // ================= CREATE =================
