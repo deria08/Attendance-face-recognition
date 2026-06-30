@@ -12,6 +12,15 @@ def extract_face_embedding(image_bytes, threshold=0.60):
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     if img is None:
         return None, "Gambar tidak valid"
+    # Brightness enhancement
+    img = cv2.convertScaleAbs(img, alpha=1.5, beta=40)
+    # cek brightness
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    brightness = np.mean(gray)
+    if brightness < 40:
+        return None, "Pencahayaan terlalu gelap"
+    # Denoise
+    img = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     faces = embedder.extract(img_rgb, threshold=threshold)
     if len(faces) == 0:
@@ -45,5 +54,5 @@ def verify_face(name, image_bytes):
     if error:
         return None, error
     similarity = cosine_similarity(np.array(embedding), saved_embedding)
-    is_match = similarity > 0.75
+    is_match = similarity > 0.65
     return {"similarity": float(similarity), "match": is_match}, None

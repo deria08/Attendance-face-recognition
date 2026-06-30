@@ -6,11 +6,23 @@ const faceSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  imageUrl: String, // dari Cloudinary
+
+  nim: {
+    type: String,
+    required: true
+  },
+
+  imageUrl: {
+    type: String
+  },
+
+  embedding: {
+    type: [Number],   // 🔥 penting untuk AI
+    default: []
+  },
+
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
-
-module.exports = mongoose.model('Face', faceSchema);

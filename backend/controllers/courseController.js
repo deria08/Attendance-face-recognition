@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Course = require('../models/course');
 const User = require('../models/user');
+const { getCurrentAcademicPeriod} = require('../utils/academicHelper');
 
 
 // ================= CREATE COURSE =================
@@ -18,8 +19,18 @@ exports.createCourse = async (req, res) => {
       jam_selesai,
       ruangan,
       late_tolerance_minutes, // ← tambahkan
-      sks                    // ← tambahkan
+      sks,                    // ← tambahkan
+      tahun_ajaran,
+      jenis_semester
     } = req.body;
+
+    // ⭐ PERUBAHAN: Jika Admin tidak mengirim tahun_ajaran/jenis_semester, isi otomatis
+    if (!tahun_ajaran || !jenis_semester) {
+      const currentPeriod = getCurrentAcademicPeriod();
+      tahun_ajaran = currentPeriod.tahun_ajaran;
+      jenis_semester = currentPeriod.jenis_semester;
+      console.log(`📅 Periode otomatis: ${tahun_ajaran} - ${jenis_semester}`);
+    }
 
     if (
       !kode_mk ||
@@ -30,7 +41,9 @@ exports.createCourse = async (req, res) => {
       !hari ||
       !jam_mulai ||
       !jam_selesai ||
-      !ruangan
+      !ruangan ||
+      !tahun_ajaran || 
+      !jenis_semester
     ) {
       return res.status(400).json({
         message: 'Data mata kuliah tidak lengkap'
@@ -66,7 +79,9 @@ exports.createCourse = async (req, res) => {
       jam_selesai,
       ruangan,
       late_tolerance_minutes: late_tolerance_minutes || 15,
-      sks: sks || 2
+      sks: sks || 2,
+      tahun_ajaran,
+      jenis_semester
     });
 
     await course.save();
@@ -91,7 +106,7 @@ exports.getAllCourses = async (req, res) => {
   try {
 
     const courses = await Course.find()
-      .populate('dosen_pengampu', 'name nim_nidn email');
+      .populate('dosen_pengampu', 'name nim_nidn email gelar');
 
     res.json(courses);
 
@@ -170,21 +185,22 @@ exports.getCoursesByProdi = async (req, res) => {
 
 
 // ================= UPDATE COURSE =================
+// ⭐ PERUBAHAN: updateCourse juga perlu mengakomodasi update field baru (opsional)
 exports.updateCourse = async (req, res) => {
   try {
-
     const updateData = req.body;
 
-    // validasi dosen jika diubah
+    // Validasi dosen jika diubah
     if (updateData.dosen_pengampu) {
-
       const dosen = await User.findById(updateData.dosen_pengampu);
-
       if (!dosen || dosen.role !== 'dosen') {
-        return res.status(400).json({
-          message: 'Dosen pengampu tidak valid'
-        });
+        return res.status(400).json({ message: 'Dosen pengampu tidak valid' });
       }
+    }
+
+    // ⭐ PERUBAHAN: validasi jenis_semester jika diubah
+    if (updateData.jenis_semester && !['ganjil', 'genap'].includes(updateData.jenis_semester)) {
+      return res.status(400).json({ message: 'jenis_semester harus "ganjil" atau "genap"' });
     }
 
     const course = await Course.findByIdAndUpdate(
@@ -194,22 +210,14 @@ exports.updateCourse = async (req, res) => {
     ).populate('dosen_pengampu', 'name');
 
     if (!course) {
-      return res.status(404).json({
-        message: 'Mata kuliah tidak ditemukan'
-      });
+      return res.status(404).json({ message: 'Mata kuliah tidak ditemukan' });
     }
 
-    res.json({
-      message: 'Mata kuliah berhasil diupdate',
-      course
-    });
+    res.json({ message: 'Mata kuliah berhasil diupdate', course });
 
   } catch (error) {
     console.error(error);
-
-    res.status(500).json({
-      message: 'Server error'
-    });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

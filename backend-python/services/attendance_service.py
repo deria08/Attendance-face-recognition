@@ -29,7 +29,7 @@ def has_attended_today_course(user_id, course_id):
     query = {
         "user_id": user_id,
         "course_id": course_id,
-        "status": {"$in": ["success", "late"]},
+        "status": {"$in": ["success", "late", "manual"]},
         "timestamp": {"$gte": start_day, "$lt": end_day}
     }
     existing = attendance_collection.find_one(query)

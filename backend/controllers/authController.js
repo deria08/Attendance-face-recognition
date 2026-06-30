@@ -6,9 +6,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'rahasia123';
 // ---------- REGISTER ----------
 exports.register = async (req, res) => {
   try {
-    const { name, nim_nidn, email, role, prodi, semester } = req.body;
+    const { name, nim_nidn, email, role, prodi, semester, gelar } = req.body;
 
-    if (!name || !nim_nidn || !email || !role) {
+    if (!name || !nim_nidn || !role) { // email tidak wajib
       return res.status(400).json({ message: "Data tidak lengkap" });
     }
 
@@ -26,11 +26,12 @@ exports.register = async (req, res) => {
     const newUser = new User({
       name,
       nim_nidn,
-      email,
+      email: email || '', // opsional
       password: hashedPassword,
       role,
       prodi: prodi || null,
-      semester: role === 'mahasiswa' ? semester : null
+      semester: role === 'mahasiswa' ? semester : null,
+      gelar: role === 'dosen' ? (gelar || '') : '' 
     });
 
     await newUser.save();
@@ -69,7 +70,8 @@ exports.login = async (req, res) => {
       email: user.email,
       role: user.role,
       prodi: user.prodi,
-      semester: user.semester
+      semester: user.semester,
+      gelar: user.gelar || ''
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
 
@@ -125,14 +127,15 @@ exports.updateUser = async (req, res) => {
       return res.status(403).json({ message: "Akses ditolak" });
     }
 
-    const { name, nim_nidn, email, role, password, prodi, semester } = req.body;
+    const { name, nim_nidn, email, role, password, prodi, semester, gelar } = req.body;
 
     const updateData = {
       name,
-      email,
+      email: email || '', // opsional
       role,
       prodi: prodi || null,
-      semester: role === 'mahasiswa' ? semester : null
+      semester: role === 'mahasiswa' ? semester : null,
+      gelar: role === 'dosen' ? (gelar || '') : ''
     };
 
     // cek unik NIM/NIDN

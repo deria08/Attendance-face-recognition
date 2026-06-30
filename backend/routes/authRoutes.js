@@ -11,7 +11,7 @@ router.post('/login', authController.login);
 router.use(verifyToken); // semua route di bawah ini memerlukan token
 
 router.get('/profile', authController.getProfile); // <-- tambahkan ini
-router.get('/users', requireRole(['admin']), authController.getAllUsers);
+router.get('/users', authController.getAllUsers);
 router.get('/users/:id', authController.getUserById);
 router.put('/users/:id', authController.updateUser);
 router.delete('/users/:id', authController.deleteUser);

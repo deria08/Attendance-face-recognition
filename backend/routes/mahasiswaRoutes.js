@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const { ObjectId } = require('mongodb');
 
-// Middleware untuk mendapatkan facesCollection dari app locals
 const getFacesCollection = (req, res, next) => {
   if (!req.app.locals.facesCollection) {
     return res.status(500).json({ error: 'Database faces belum siap' });
@@ -20,13 +20,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET semua mahasiswa dengan status registrasi wajah (ada/tidak di faces)
 router.get('/mahasiswa/face-status', getFacesCollection, async (req, res) => {
   try {
     const facesCollection = req.facesCollection;
     const mahasiswa = await User.find({ role: 'mahasiswa' }).select('-password');
     const result = await Promise.all(mahasiswa.map(async (user) => {
-      const face = await facesCollection.findOne({ name: user.name });
+      const face = await facesCollection.findOne({ user_id: user._id });
       return {
         nim: user.nim_nidn,
         name: user.name,
@@ -35,21 +34,44 @@ router.get('/mahasiswa/face-status', getFacesCollection, async (req, res) => {
     }));
     res.json(result);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// DELETE data wajah berdasarkan nama (reset registrasi)
-router.delete('/faces/:name', getFacesCollection, async (req, res) => {
+router.delete('/faces/:id', getFacesCollection, async (req, res) => {
   try {
     const facesCollection = req.facesCollection;
-    const { name } = req.params;
-    const result = await facesCollection.deleteOne({ name });
+    const { id } = req.params;
+
+    let userId = null;
+
+    if (ObjectId.isValid(id)) {
+      const user = await User.findById(id);
+      if (user && user.role === 'mahasiswa') {
+        userId = user._id;
+      }
+    }
+
+    if (!userId) {
+      const user = await User.findOne({ nim_nidn: id, role: 'mahasiswa' });
+      if (user) {
+        userId = user._id;
+      }
+    }
+
+    if (!userId) {
+      return res.status(404).json({ error: 'Mahasiswa tidak ditemukan' });
+    }
+
+    const result = await facesCollection.deleteOne({ user_id: userId });
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Data wajah tidak ditemukan' });
     }
-    res.json({ message: 'Data wajah berhasil direset. Mahasiswa dapat registrasi ulang.' });
+
+    res.json({ message: 'Data wajah berhasil dihapus' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });

@@ -1,6 +1,7 @@
 const Face = require('../models/face');
 const cloudinary = require('../config/cloudinary');
 
+
 // ================= CREATE =================
 exports.registerFace = async (req, res) => {
   try {
@@ -83,12 +84,34 @@ exports.updateFace = async (req, res) => {
 exports.deleteFace = async (req, res) => {
   try {
     const { userId } = req.params;
-    const face = await Face.findOneAndDelete({ userId });
-    if (!face) return res.status(404).json({ message: 'Data wajah tidak ditemukan' });
-    res.json({ message: 'Data wajah berhasil dihapus' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+
+    console.log("DELETE FACE DIPANGGIL");
+    console.log("userId =", userId);
+
+    const data = await Face.find();
+
+    console.log("ISI COLLECTION:");
+    console.log(data);
+
+    const face = await Face.findOneAndDelete({
+      userId
+    });
+
+    console.log("HASIL DELETE:", face);
+
+    if (!face) {
+      return res.status(404).json({
+        message: "Data wajah tidak ditemukan"
+      });
+    }
+
+    res.json({
+      message: "Berhasil"
+    });
+
+  } catch(err){
+    console.log(err);
   }
-};
+}
 
 // HAPUS fungsi verifyFace karena tidak dipakai

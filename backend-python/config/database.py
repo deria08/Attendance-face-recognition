@@ -8,7 +8,7 @@ MONGO_URI = os.getenv("MONGODB_URI")
 DB_NAME = os.getenv("DATABASE_NAME", "faceDB")
 
 client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = client[DB_NAME] 
 
 faces_collection = db["faces"]
 attendance_collection = db["attendances"]
@@ -16,6 +16,7 @@ attendance_collection = db["attendances"]
 courses_collection = db["courses"]
 enrollments_collection = db["enrollments"]
 users_collection = db["users"]
+manual_attendance_collection = db["manual_attendance"]
 
 def test_connection():
     try:
