@@ -1,35 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, requireRole } = require('../middleware/authMiddleware');
-
-const {
-  enrollMahasiswa,
-  getAllEnrollments,
-  getCoursesByMahasiswa,
-  getMahasiswaByCourse,
-  deleteEnrollment,
-  // getEnrollmentsByCourse
-} = require('../controllers/enrollmentController');
+const enrollmentController = require('../controllers/enrollmentController'); // ✅ import
 
 // Semua route memerlukan token
 router.use(verifyToken);
 
-// ENROLL - hanya admin
-router.post('/', requireRole(['admin']), enrollMahasiswa);
+// --- Existing routes ---
+router.post('/', requireRole(['admin']), enrollmentController.enrollMahasiswa);
+router.get('/', requireRole(['admin']), enrollmentController.getAllEnrollments);
+router.get('/mahasiswa/:mahasiswaId', requireRole(['admin', 'mahasiswa']), enrollmentController.getCoursesByMahasiswa);
+router.get('/course/:courseId', requireRole(['admin', 'dosen']), enrollmentController.getMahasiswaByCourse);
+router.delete('/:id', requireRole(['admin']), enrollmentController.deleteEnrollment);
 
-// GET ALL - hanya admin
-router.get('/', requireRole(['admin']), getAllEnrollments);
-
-// GET COURSE MAHASISWA - admin dan mahasiswa (mahasiswa hanya bisa lihat miliknya, dicek controller)
-router.get('/mahasiswa/:mahasiswaId', requireRole(['admin', 'mahasiswa']), getCoursesByMahasiswa);
-
-// GET MAHASISWA DALAM COURSE - admin dan dosen (dosen hanya bisa lihat course yang diampu)
-router.get('/course/:courseId', requireRole(['admin', 'dosen']), getMahasiswaByCourse);
-
-// DELETE - hanya admin
-router.delete('/:id', requireRole(['admin']), deleteEnrollment);
-
-// Duplicate route? Saya komentari agar tidak bentrok
-// router.get('/course/:courseId', getEnrollmentsByCourse);
+// --- Import routes ---
+router.get('/template', requireRole(['admin']), enrollmentController.downloadTemplate);
+router.post(
+    '/import',
+    requireRole(['admin']),
+    enrollmentController.uploadMiddleware,
+    enrollmentController.importEnrollments
+);
+router.post('/import/export-errors', requireRole(['admin']), enrollmentController.downloadValidationResult);
 
 module.exports = router;

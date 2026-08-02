@@ -55,3 +55,59 @@ async def save_attendance_log(user_id, course_id, meeting_id, pertemuan, status,
     except Exception as e:
         print(f"❌ Error saving attendance: {e}")
         raise
+
+async def has_attended_meeting(user_id, course_id, pertemuan):
+    """Check if student already attended a specific meeting (no date restriction)"""
+    if isinstance(user_id, str):
+        user_id = ObjectId(user_id)
+    if isinstance(course_id, str):
+        course_id = ObjectId(course_id)
+
+    query = {
+        "user_id": user_id,
+        "course_id": course_id,
+        "pertemuan": pertemuan,
+        "status": {"$in": ["success", "late", "manual"]}
+    }
+    existing = await asyncio.to_thread(attendance_collection.find_one, query)
+    return existing is not None
+# ===== FUNGSI UNTUK GET DAN UPDATE RECORD =====
+
+async def get_attendance_record(user_id, course_id, pertemuan):
+    """Ambil record absensi yang sudah ada (jika ada)"""
+    if isinstance(user_id, str):
+        user_id = ObjectId(user_id)
+    if isinstance(course_id, str):
+        course_id = ObjectId(course_id)
+
+    query = {
+        "user_id": user_id,
+        "course_id": course_id,
+        "pertemuan": pertemuan,
+        "status": {"$in": ["success", "late", "manual"]}
+    }
+    return await asyncio.to_thread(attendance_collection.find_one, query)
+
+async def update_attendance_log(record_id, status, similarity, message, meeting_id=None, lat=None, lon=None):
+    """Update record absensi yang sudah ada"""
+    if isinstance(record_id, str):
+        record_id = ObjectId(record_id)
+    update_data = {
+        "status": status,
+        "similarity": float(similarity),
+        "message": message,
+        "timestamp": datetime.now()
+    }
+    if meeting_id:
+        if isinstance(meeting_id, str):
+            meeting_id = ObjectId(meeting_id)
+        update_data["meeting_id"] = meeting_id
+    if lat is not None and lon is not None:
+        update_data["location"] = {"lat": lat, "lon": lon}
+    
+    result = await asyncio.to_thread(
+        attendance_collection.update_one,
+        {"_id": record_id},
+        {"$set": update_data}
+    )
+    return result
